@@ -58,9 +58,8 @@ stages:
         name: loads scRNA datasets
         software_environment: r_osta
         repository:
-          #url: https://github.com/omni-training/datasets
-          url: /Users/mark/projects/omb/omni-training/datasets
-          commit: main
+          url: https://github.com/omni-training/datasets
+          commit: 068086f
         parameters:
           - dataset_name: ["sc-mix"]
           # - dataset_name: ["sc-mix", "be1", "cb", "1.3m"]
@@ -84,9 +83,8 @@ stages:
         name: run R pipelines
         software_environment: r_osta
         repository:
-          #url: https://github.com/omni-training/pipelines-r
-          url: /Users/mark/projects/omb/omni-training/pipelines-r
-          commit: main
+          url: https://github.com/omni-training/pipelines-r
+          commit: a93ac42
         parameters:
           - method_name: ["osca"]
             d_cluster: [0]
@@ -98,9 +96,8 @@ stages:
         name: run python pipelines
         software_environment: scanpy
         repository:
-          #url: https://github.com/omni-training/pipelines-py
-          url: /Users/mark/projects/omb/omni-training/pipelines-py
-          commit: main 
+          url: https://github.com/omni-training/pipelines-py
+          commit: b58e2c4
           entrypoint: scanpy
         parameters:
           - method_name: ["scanpy"]
@@ -113,9 +110,8 @@ stages:
         name: run python pipelines
         software_environment: brisc
         repository:
-          #url: https://github.com/omni-training/pipelines-py
-          url: /Users/mark/projects/omb/omni-training/pipelines-py
-          commit: main 
+          url: https://github.com/omni-training/pipelines-py
+          commit: b58e2c4
           entrypoint: brisc
         parameters:
           - d_cluster: [0]
@@ -138,6 +134,6 @@ stages:
         name: compute clustering metrics
         software_environment: metrics
         repository:
-          #url: https://github.com/omni-training/metrics
-          url: /Users/mark/projects/omb/omni-training/metrics
-          commit: main
+          url: https://github.com/omni-training/metrics
+          commit: 1560006
+ 
