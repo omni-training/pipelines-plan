@@ -1,0 +1,7 @@
+name: brisc
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - brisc=0.2.5
+  - polars=2.1.0

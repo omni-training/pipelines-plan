@@ -4,11 +4,11 @@ description: "Benchmarking scRNA pipelines (as implemented by Billato et al.: 10
 benchmarker: Atreya Choudhury, Mark Robinson, Martin Emons, David Wissel, Samuel Gunz
 
 # Benchmark configuration
-version: "1.2"
-api_version: "0.4.0"
+version: "1.0"
+api_version: "0.8.0"
 
 provenance:
-  canonical_url: https://raw.githubusercontent.com/omni-eccb2026/pipelines-plan/refs/heads/main/benchmark.yaml
+  canonical_url: https://raw.githubusercontent.com/omni-training/pipelines-plan/refs/heads/main/benchmark.yaml
 
 # Available software environments
 software_backend: conda
@@ -19,6 +19,9 @@ software_environments:
   scanpy:
     name: conda env for Python + scanpy packages
     conda: envs/scanpy.yml
+  brisc:
+    name: conda env for brisc
+    conda: envs/brisc.yml
   metrics:
     name: conda env for Python + metrics packages
     conda: envs/metrics.yml
@@ -28,7 +31,7 @@ software_environments:
 #    name: Gathers and processes metrics from different pipelines
 #    software_environment: r_apptainer
 #    repository:
-#      url: https://github.com/omni-eccb2026/pipelines-report
+#      url: https://github.com/omni-training/pipelines-report
 #      commit: "404d023"
 #    inputs:
 #      - metrics.metrics
@@ -40,45 +43,50 @@ software_environments:
 #      - id: report.plots
 #        path: "report/plots.html"
 
+
 stages:
-  - id: datasets
+  - id: DATA
     outputs:
-      - id: data.h5ad
-        path: "{dataset}.h5ad"
-      - id: data.clusters_truth
-        path: "{dataset}.clusters_truth.tsv"
-      - id: data.clusters_truth_num
-        path: "{dataset}.clusters_truth_num.txt"
+      - id: data_h5ad
+        path: "{module.id}.h5ad"
+      - id: data_clusters_truth
+        path: "{module.id}.clusters_truth.tsv"
+      - id: data_clusters_truth_num
+        path: "{module.id}.clusters_truth_num.txt"
     modules:
-      - id: datasets-r
+      - id: datasets_r
         name: loads scRNA datasets
         software_environment: r_osta
         repository:
-          url: https://github.com/omni-eccb2026/datasets
-          commit: 65d18ae
+          #url: https://github.com/omni-training/datasets
+          url: /Users/mark/projects/omb/omni-training/datasets
+          commit: main
         parameters:
           - dataset_name: ["sc-mix"]
           # - dataset_name: ["sc-mix", "be1", "cb", "1.3m"]
-  - id: methods
+  - id: PIPELINE
     inputs:
-      - data.h5ad
-      - data.clusters_truth_num
+      - data_h5ad
+      - data_clusters_truth_num
     outputs:
-      - id: methods.timings
-        path: "{dataset}.timings.json"
-      - id: methods.clustering_info
-        path: "{dataset}.clustering_info.json"
-      - id: methods.clusters
-        path: "{dataset}.clusters.tsv"
-      - id: methods.pca
-        path: "{dataset}.pca.tsv"
+      - id: methods_timings
+        path: "{module.id}.timings.json"
+      - id: methods_clustering_info
+        path: "{module.id}.clustering_info.json"
+      - id: methods_clusters
+        path: "{module.id}.clusters.tsv"
+      - id: methods_pca
+        path: "{module.id}.pca.tsv"
+      - id: methods_hvgs
+        path: "{module.id}.hvgs.tsv"
     modules:
-      - id: osta-r
+      - id: osta
         name: run R pipelines
         software_environment: r_osta
         repository:
-          url: https://github.com/omni-eccb2026/pipelines-r
-          commit: 33129f6
+          #url: https://github.com/omni-training/pipelines-r
+          url: /Users/mark/projects/omb/omni-training/pipelines-r
+          commit: main
         parameters:
           - method_name: ["osca"]
             d_cluster: [0]
@@ -86,18 +94,14 @@ stages:
             n_comp: [30]
             n_neig: [20]
             n_hvg: [1500]
-          #- method_name: ["seurat", "osca", "scrapper"]
-          #  d_cluster: [-2, -1, 0, 1, 2]
-          #  filter: ["manual", "auto"]
-          #  n_comp: [20, 30, 50]
-          #  n_neig: [10, 15, 20, 30]
-          #  n_hvg: [1000, 1500, 2000]
       - id: scanpy
         name: run python pipelines
         software_environment: scanpy
         repository:
-          url: https://github.com/omni-eccb2026/pipelines-py
-          commit: 104a39d
+          #url: https://github.com/omni-training/pipelines-py
+          url: /Users/mark/projects/omb/omni-training/pipelines-py
+          commit: main 
+          entrypoint: scanpy
         parameters:
           - method_name: ["scanpy"]
             d_cluster: [0]
@@ -105,20 +109,35 @@ stages:
             n_comp: [30]
             n_neig: [20]
             n_hvg: [1500]
-  - id: metrics
+      - id: brisc
+        name: run python pipelines
+        software_environment: brisc
+        repository:
+          #url: https://github.com/omni-training/pipelines-py
+          url: /Users/mark/projects/omb/omni-training/pipelines-py
+          commit: main 
+          entrypoint: brisc
+        parameters:
+          - d_cluster: [0]
+            filter: "manual"
+            n_comp: [30]
+            n_neig: [20]
+            n_hvg: [1500]
+  - id: METRIC
     inputs:
-      - data.clusters_truth
-      - methods.pca
-      - methods.clusters
-      - methods.timings
-      - methods.clustering_info
+      - data_clusters_truth
+      - methods_pca
+      - methods_clusters
+      - methods_timings
+      - methods_clustering_info
     outputs:
-      - id: metrics.metrics
-        path: "{dataset}.metrics.json"
+      - id: metrics_metrics
+        path: "{module.id}.metrics.json"
     modules:
-      - id: metrics-py
+      - id: metrics_py
         name: compute clustering metrics
         software_environment: metrics
         repository:
-          url: https://github.com/omni-eccb2026/metrics
-          commit: a97c3d8
+          #url: https://github.com/omni-training/metrics
+          url: /Users/mark/projects/omb/omni-training/metrics
+          commit: main
