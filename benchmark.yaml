@@ -111,7 +111,7 @@ stages:
         software_environment: brisc
         repository:
           url: https://github.com/omni-training/pipelines-py
-          commit: b58e2c4
+          commit: b2b787f
           entrypoint: brisc
         parameters:
           - d_cluster: [0]

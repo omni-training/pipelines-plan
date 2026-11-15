@@ -1,8 +1,8 @@
 # Benchmarking scRNA pipelines (simplified for ECCB 2026 Workshop)
 
-[![Open in OBEditor](https://img.shields.io/badge/open-obeditor-0078d4?style=flat)](https://omnibenchmark.github.io/obeditor?url=https://github.com/omni-eccb2026/pipelines-plan/blob/main/benchmark.yaml)
+[![Open in OBEditor](https://img.shields.io/badge/open-obeditor-0078d4?style=flat)](https://omnibenchmark.github.io/obeditor?url=https://github.com/omni-training/pipelines-plan/blob/main/benchmark.yaml)
 
-This repo contains a single-cell RNA-seq (scRNA-seq) pipelines benchmark created using [OmniBenchmark](https://omnibenchmark.org), but trimmed for the purposes of the [ECCB 2026 workshop](https://eccb2026.org/tutorials-workshops#w1-constructing-standardized-benchmarks-using-omnibenchmark).
+This repo contains a single-cell RNA-seq (scRNA-seq) pipelines benchmark created using [OmniBenchmark](https://omnibenchmark.org), but trimmed for the purposes of training.
 
 ## Installing `ob` (Omnibenchmark)
 
@@ -11,7 +11,7 @@ OmniBenchmark is required to run this pipeline and can be installed following [t
 ```{bash}
 conda create -n omni python=3.12 -y
 conda activate omni
-pip install omnibenchmark==0.6.0
+pip install omnibenchmark==0.8.0  # at time of writing, not yet available (need to install from btraven00:feat/fanin-manifest)
 
 ob --version
 ```
@@ -25,12 +25,12 @@ conda activate omni
 ## Quick start
 
 ```{bash}
-git clone https://github.com/omni-eccb2026/pipelines-plan.git
+git clone https://github.com/omni-training/pipelines-plan.git
 cd pipelines-plan
 ob validate plan benchmark.yaml
 ob run benchmark.yaml -c 2
 
-#ob run benchmark.yaml -- --apptainer-args='--nv'  # not needed for ECCB workshop
+#ob run benchmark.yaml -- --apptainer-args='--nv'  # not needed currently
 ```
 
 ## Other useful commands (run one by one, do not cut-paste)
