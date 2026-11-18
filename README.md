@@ -11,7 +11,11 @@ OmniBenchmark is required to run this pipeline and can be installed following [t
 ```{bash}
 conda create -n omni python=3.12 -y
 conda activate omni
-pip install omnibenchmark==0.8.0  # at time of writing, not yet available (need to install from btraven00:feat/fanin-manifest)
+#pip install omnibenchmark==0.8.0  # not yet available (need to install from omnibenchmark `main`)
+
+cd ~/scratch
+git clone https://github.com/omnibenchmark/omnibenchmark.git 
+cd omnibenchmark && pip install . && cd ..
 
 ob --version
 ```
