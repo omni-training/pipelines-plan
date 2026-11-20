@@ -120,6 +120,46 @@ jobs:
           ob --version
           conda info
 
+      - name: Fix Bioconda data package installer on macOS
+        if: runner.os == 'macOS'
+        run: |
+          conda create -y --no-deps -p "$RUNNER_TEMP/bioc-data-packages" \
+            -c conda-forge -c bioconda -c https://prefix.dev/almost-conductor \
+            bioconductor-data-packages
+          python - <<'PY'
+          import json
+          import pathlib
+          import subprocess
+
+          pkgs_dirs = json.loads(
+              subprocess.check_output(["conda", "info", "--json"], text=True)
+          )["pkgs_dirs"]
+          old = "R CMD INSTALL --build $TARBALL\nrm $TARBALL"
+          marker = 'R CMD INSTALL --library=$PREFIX/lib/R/library "$TARBALL"'
+          new = """if [[ "$(uname -s)" == "Darwin" ]]; then
+            R CMD INSTALL --library=$PREFIX/lib/R/library "$TARBALL"
+            rm "$TARBALL"
+            rmdir "$STAGING"
+            exit 0
+          fi
+
+          R CMD INSTALL --build $TARBALL
+          rm $TARBALL"""
+          patched = 0
+          for pkgs_dir in pkgs_dirs:
+              for helper in pathlib.Path(pkgs_dir).glob(
+                  "bioconductor-data-packages-*/bin/installBiocDataPackage.sh"
+              ):
+                  content = helper.read_text()
+                  if old in content:
+                      helper.write_text(content.replace(old, new))
+                      patched += 1
+                  elif marker in content:
+                      patched += 1
+          if patched == 0:
+              raise SystemExit("Bioconda data package installer was not found in the package cache")
+          PY
+
       # --- Benchmark --------------------------------------------------------
       - name: Validate plan
         run: ob validate plan benchmark.yaml
