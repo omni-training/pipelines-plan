@@ -33,6 +33,7 @@ dependencies:
   - bioconductor-geoquery=2.74.0            # be1
   - bioconductor-singlecellmultimodal=1.18.0  # cb
   - bioconductor-tenxbraindata=1.26.0       # 1.3m
+  - bioconductor-data-packages=20260207=hdfd78af_1  # this pin to fix genomeinfodb problem
 
   # ---- CRAN ----
   - r-argparse
