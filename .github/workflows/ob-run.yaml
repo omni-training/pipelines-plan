@@ -1,0 +1,254 @@
+name: Run benchmark
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ob_branch:
+        description: "omnibenchmark branch/tag/commit to install"
+        type: string
+        default: main
+      cores:
+        description: "Cores passed to `ob run -c`"
+        type: string
+        default: "2"
+      use_cache:
+        description: "Use the conda package / environment caches"
+        type: boolean
+        default: true
+      run_windows:
+        description: "Also run on Windows (via WSL, experimental)"
+        type: boolean
+        default: false
+
+# Inputs are empty on push/PR events, so every value has a fallback here.
+env:
+  OB_BRANCH: ${{ inputs.ob_branch || 'main' }}
+  OB_CORES: ${{ inputs.cores || '2' }}
+  USE_CACHE: ${{ inputs.use_cache != false }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Linux + macOS (Apple silicon): native conda
+  # ---------------------------------------------------------------------------
+  run:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x64
+          - os: macos-latest        # arm64 (M-series)
+            label: macos-arm64
+    defaults:
+      run:
+        shell: bash -el {0}         # login shell, so the conda env is active
+    env:
+      # ob/snakemake build the per-module envs here (instead of out/.snakemake/conda),
+      # which gives us a stable path to cache.
+      SNAKEMAKE_CONDA_PREFIX: ${{ github.workspace }}/../snakemake-conda-envs
+
+    steps:
+      - name: Check out benchmark
+        uses: actions/checkout@v4
+
+      - name: Check out omnibenchmark (${{ env.OB_BRANCH }})
+        uses: actions/checkout@v4
+        with:
+          repository: omnibenchmark/omnibenchmark
+          ref: ${{ env.OB_BRANCH }}
+          path: _ob_src
+
+      - name: Record omnibenchmark commit
+        id: ob
+        run: echo "sha=$(git -C _ob_src rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      # --- Advanced: caches -------------------------------------------------
+      # 1) Downloaded conda packages (tarballs). setup-miniconda points
+      #    pkgs_dirs at ~/conda_pkgs_dir.
+      - name: Cache conda package downloads
+        if: env.USE_CACHE == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/conda_pkgs_dir
+          key: conda-pkgs-${{ matrix.label }}-${{ hashFiles('envs/*.yml') }}
+          restore-keys: conda-pkgs-${{ matrix.label }}-
+
+      # 2) The fully built module environments. Snakemake names each env by a
+      #    hash of its YAML, so a changed env file simply gets rebuilt.
+      - name: Cache built module environments
+        if: env.USE_CACHE == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.SNAKEMAKE_CONDA_PREFIX }}
+          key: smk-envs-${{ matrix.label }}-${{ hashFiles('envs/*.yml') }}
+          restore-keys: smk-envs-${{ matrix.label }}-
+
+      # 3) ob's cache of cloned module repositories.
+      - name: Cache module git repositories
+        if: env.USE_CACHE == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/omnibenchmark/git
+          key: ob-git-${{ matrix.label }}-${{ hashFiles('benchmark.yaml') }}
+          restore-keys: ob-git-${{ matrix.label }}-
+
+      # --- Environment ------------------------------------------------------
+      - name: Set up conda (Miniforge) + python env
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: omni
+          python-version: "3.12"
+          channels: conda-forge
+          conda-remove-defaults: "true"
+          auto-activate-base: false
+
+      - name: Install omnibenchmark from source
+        run: |
+          mkdir -p "$SNAKEMAKE_CONDA_PREFIX"
+          pip install ./_ob_src
+          ob --version
+          conda info
+
+      # --- Benchmark --------------------------------------------------------
+      - name: Validate plan
+        run: ob validate plan benchmark.yaml
+
+      - name: Run benchmark
+        run: ob run benchmark.yaml -c "$OB_CORES"
+
+      - name: Snapshot results
+        run: |
+          SNAP="snapshot-${{ matrix.label }}-ob${{ steps.ob.outputs.sha }}.tar.gz"
+          ob archive benchmark.yaml --code --software --results -o "$SNAP"
+          echo "SNAP=$SNAP" >> "$GITHUB_ENV"
+          {
+            echo "### ${{ matrix.label }}"
+            echo "- omnibenchmark: \`$OB_BRANCH\` @ \`${{ steps.ob.outputs.sha }}\`"
+            echo "- snapshot: \`$SNAP\` ($(du -h "$SNAP" | cut -f1))"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-${{ matrix.label }}
+          path: ${{ env.SNAP }}
+          retention-days: 30
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.label }}
+          path: |
+            out/.logs/
+            out/.metadata/
+            out/Snakefile
+            out/.snakemake/log/
+          if-no-files-found: ignore
+          include-hidden-files: true
+
+  # ---------------------------------------------------------------------------
+  # Windows (experimental, opt-in): bioconda has no win-64 builds, so run the
+  # Linux toolchain inside WSL instead of native Windows conda.
+  # ---------------------------------------------------------------------------
+  windows-wsl:
+    name: windows-wsl
+    if: github.event_name == 'workflow_dispatch' && inputs.run_windows
+    runs-on: windows-latest
+    timeout-minutes: 240
+    continue-on-error: true
+    defaults:
+      run:
+        shell: wsl-bash {0}
+
+    steps:
+      - name: Keep LF line endings
+        shell: pwsh
+        run: git config --global core.autocrlf false
+
+      - name: Check out benchmark
+        uses: actions/checkout@v4
+        with:
+          path: bench
+
+      - name: Check out omnibenchmark (${{ env.OB_BRANCH }})
+        uses: actions/checkout@v4
+        with:
+          repository: omnibenchmark/omnibenchmark
+          ref: ${{ env.OB_BRANCH }}
+          path: ob_src
+
+      - name: Set up WSL
+        uses: Vampire/setup-wsl@v5
+        with:
+          distribution: Ubuntu-24.04
+          additional-packages: curl ca-certificates git bzip2
+
+      - name: Install Miniforge + omnibenchmark (inside WSL)
+        run: |
+          set -euo pipefail
+          WS="$(wslpath '${{ github.workspace }}')"
+          # Work on the Linux filesystem: much faster than /mnt/<drive>, and
+          # keeps POSIX permissions/symlinks that snakemake relies on.
+          cp -r "$WS/bench"  "$HOME/bench"
+          cp -r "$WS/ob_src" "$HOME/ob_src"
+          curl -fsSL -o /tmp/miniforge.sh \
+            https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+          bash /tmp/miniforge.sh -b -p "$HOME/miniforge3"
+          source "$HOME/miniforge3/etc/profile.d/conda.sh"
+          conda create -y -n omni python=3.12
+          conda activate omni
+          pip install "$HOME/ob_src"
+          ob --version
+
+      - name: Validate and run benchmark (inside WSL)
+        run: |
+          set -euo pipefail
+          source "$HOME/miniforge3/etc/profile.d/conda.sh"
+          conda activate omni
+          cd "$HOME/bench"
+          ob validate plan benchmark.yaml
+          ob run benchmark.yaml -c "${{ env.OB_CORES }}"
+
+      - name: Snapshot results (inside WSL)
+        run: |
+          set -euo pipefail
+          source "$HOME/miniforge3/etc/profile.d/conda.sh"
+          conda activate omni
+          cd "$HOME/bench"
+          ob archive benchmark.yaml --code --software --results -o snapshot-windows-wsl.tar.gz
+          cp snapshot-windows-wsl.tar.gz "$(wslpath '${{ github.workspace }}')/"
+
+      - name: Copy logs out of WSL
+        if: always()
+        run: |
+          WS="$(wslpath '${{ github.workspace }}')"
+          mkdir -p "$WS/wsl-logs"
+          cp -r "$HOME/bench/out/.logs" "$HOME/bench/out/Snakefile" "$WS/wsl-logs/" 2>/dev/null || true
+
+      - name: Upload snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-windows-wsl
+          path: snapshot-windows-wsl.tar.gz
+          if-no-files-found: ignore
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-windows-wsl
+          path: wsl-logs/
+          if-no-files-found: ignore
+          include-hidden-files: true
