@@ -16,12 +16,9 @@ software_environments:
   r_datasets:
     name: conda env for R/BioC to organize datasets
     conda: envs/r_datasets.yml
-  r_osta:
-    name: conda env for R/BioC + osta packages
-    conda: envs/r_osta.yml
-  bixverse:
-    name: conda env for R/bixverse
-    conda: envs/bixverse.yml
+  r_pipelines:
+    name: conda env for R/BioC packages
+    conda: envs/r_pipelines.yml
   scanpy:
     name: conda env for Python + scanpy packages
     conda: envs/scanpy.yml
@@ -85,12 +82,12 @@ stages:
       - id: methods_hvgs
         path: "{module.id}.hvgs.tsv"
     modules:
-      - id: osta
+      - id: osca
         name: run R pipelines
-        software_environment: r_osta
+        software_environment: r_pipelines
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: main
+          commit: upgrade-r
         parameters:
           - method_name: ["osca"]
             d_cluster: [0]
@@ -100,10 +97,10 @@ stages:
             n_hvg: [1500]
       - id: bixverse
         name: run R pipelines
-        software_environment: bixverse
+        software_environment: r_pipelines
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: main
+          commit: upgrade-r
         parameters:
           - method_name: ["bixverse"]
             d_cluster: [0]
@@ -116,7 +113,7 @@ stages:
         software_environment: scanpy
         repository:
           url: https://github.com/omni-training/pipelines-py
-          commit: b58e2c4
+          commit: b2b787f
           entrypoint: scanpy
         parameters:
           - method_name: ["scanpy"]
