@@ -1,0 +1,1 @@
+ob run benchmark.yaml --cores 4 --unpinned --until METRIC --continue-on-error

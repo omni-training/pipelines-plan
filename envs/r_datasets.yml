@@ -20,4 +20,5 @@ dependencies:
   - bioconductor-geoquery=2.78.0
   - bioconductor-singlecellmultimodal=1.22.0
   - bioconductor-tenxbraindata=1.30.0
+  - bioconductor-data-packages=20260207=hdfd78af_1 
 
