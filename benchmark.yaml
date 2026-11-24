@@ -16,6 +16,9 @@ software_environments:
   r_osta:
     name: conda env for R/BioC + osta packages
     conda: envs/r_osta.yml
+  bixverse:
+    name: conda env for R/bixverse
+    conda: envs/bixverse.yml
   scanpy:
     name: conda env for Python + scanpy packages
     conda: envs/scanpy.yml
@@ -84,9 +87,22 @@ stages:
         software_environment: r_osta
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: a93ac42
+          commit: main
         parameters:
           - method_name: ["osca"]
+            d_cluster: [0]
+            filter: ["manual"]
+            n_comp: [30]
+            n_neig: [20]
+            n_hvg: [1500]
+      - id: bixverse
+        name: run R pipelines
+        software_environment: bixverse
+        repository:
+          url: https://github.com/omni-training/pipelines-r
+          commit: main
+        parameters:
+          - method_name: ["bixverse"]
             d_cluster: [0]
             filter: ["manual"]
             n_comp: [30]
