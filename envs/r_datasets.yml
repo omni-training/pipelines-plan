@@ -1,0 +1,24 @@
+name: r45-singlecell
+channels:
+  - conda-forge
+  - bioconda
+  - https://prefix.dev/almost-conductor
+  - nodefaults
+dependencies:
+  # R
+  - r-base=4.5.*
+
+  # CRAN
+  - r-argparse=2.3.3
+  - r-stringr=1.6.0
+
+  # Bioconductor 3.22 (the R 4.5 release set)
+  - bioconductor-anndatar=1.0.2
+  - bioconductor-rhdf5=2.54.1          # HDF5 backend anndataR needs to read/write .h5ad
+  - bioconductor-singlecellexperiment=1.32.0
+  - bioconductor-dropletutils=1.30.0
+  - bioconductor-geoquery=2.78.0
+  - bioconductor-singlecellmultimodal=1.22.0
+  - bioconductor-tenxbraindata=1.30.0
+  - bioconductor-data-packages=20260207=hdfd78af_1 
+

@@ -1,0 +1,32 @@
+name: r45-osca
+channels:
+  - https://prefix.dev/almost-conductor
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  # R
+  - r-base=4.5.3
+
+  # CRAN
+  - r-argparse=2.3.3
+  - r-jsonlite=2.0.0
+  - r-seurat=5.5.1
+
+  # Bioconductor 3.22 (the R 4.5 release set)
+  - bioconductor-singlecellexperiment=1.32.0
+  - bioconductor-scuttle=1.20.0
+  - bioconductor-annotationdbi=1.72.0
+  - bioconductor-scran=1.38.1
+  - bioconductor-scater=1.38.1
+  - bioconductor-bluster=1.20.0
+  - bioconductor-ensdb.hsapiens.v75=2.99.0
+  - bioconductor-delayedarray=0.36.1
+  - bioconductor-scrapper=1.4.0
+  - bioconductor-anndatar=1.0.2
+  - bioconductor-rhdf5=2.54.1          # HDF5 backend anndataR needs to read/write .h5ad
+  - bioconductor-data-packages=20260207=hdfd78af_1
+
+  # almost-conductor
+  - r-bixverse=0.6.3
+

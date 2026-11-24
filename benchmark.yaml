@@ -13,9 +13,12 @@ provenance:
 # Available software environments
 software_backend: conda
 software_environments:
-  r_osta:
-    name: conda env for R/BioC + osta packages
-    conda: envs/r_osta.yml
+  r_datasets:
+    name: conda env for R/BioC to organize datasets
+    conda: envs/r_datasets.yml
+  r_pipelines:
+    name: conda env for R/BioC packages
+    conda: envs/r_pipelines.yml
   scanpy:
     name: conda env for Python + scanpy packages
     conda: envs/scanpy.yml
@@ -56,10 +59,10 @@ stages:
     modules:
       - id: datasets_r
         name: loads scRNA datasets
-        software_environment: r_osta
+        software_environment: r_datasets
         repository:
           url: https://github.com/omni-training/datasets
-          commit: 068086f
+          commit: 0d0b468
         parameters:
           - dataset_name: ["sc-mix"]
           # - dataset_name: ["sc-mix", "be1", "cb", "1.3m"]
@@ -79,14 +82,27 @@ stages:
       - id: methods_hvgs
         path: "{module.id}.hvgs.tsv"
     modules:
-      - id: osta
+      - id: osca
         name: run R pipelines
-        software_environment: r_osta
+        software_environment: r_pipelines
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: a93ac42
+          commit: d1f78f6
         parameters:
           - method_name: ["osca"]
+            d_cluster: [0]
+            filter: ["manual"]
+            n_comp: [30]
+            n_neig: [20]
+            n_hvg: [1500]
+      - id: bixverse
+        name: run R pipelines
+        software_environment: r_pipelines
+        repository:
+          url: https://github.com/omni-training/pipelines-r
+          commit: d1f78f6
+        parameters:
+          - method_name: ["bixverse"]
             d_cluster: [0]
             filter: ["manual"]
             n_comp: [30]
@@ -97,7 +113,7 @@ stages:
         software_environment: scanpy
         repository:
           url: https://github.com/omni-training/pipelines-py
-          commit: b58e2c4
+          commit: b2b787f
           entrypoint: scanpy
         parameters:
           - method_name: ["scanpy"]
