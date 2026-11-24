@@ -62,7 +62,7 @@ stages:
         software_environment: r_datasets
         repository:
           url: https://github.com/omni-training/datasets
-          commit: upgrade-r
+          commit: 0d0b468
         parameters:
           - dataset_name: ["sc-mix"]
           # - dataset_name: ["sc-mix", "be1", "cb", "1.3m"]
@@ -87,7 +87,7 @@ stages:
         software_environment: r_pipelines
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: upgrade-r
+          commit: d1f78f6
         parameters:
           - method_name: ["osca"]
             d_cluster: [0]
@@ -100,7 +100,7 @@ stages:
         software_environment: r_pipelines
         repository:
           url: https://github.com/omni-training/pipelines-r
-          commit: upgrade-r
+          commit: d1f78f6
         parameters:
           - method_name: ["bixverse"]
             d_cluster: [0]
