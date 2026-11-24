@@ -13,6 +13,9 @@ provenance:
 # Available software environments
 software_backend: conda
 software_environments:
+  r_datasets:
+    name: conda env for R/BioC to organize datasets
+    conda: envs/r_datasets.yml
   r_osta:
     name: conda env for R/BioC + osta packages
     conda: envs/r_osta.yml
@@ -59,10 +62,10 @@ stages:
     modules:
       - id: datasets_r
         name: loads scRNA datasets
-        software_environment: r_osta
+        software_environment: r_datasets
         repository:
           url: https://github.com/omni-training/datasets
-          commit: 068086f
+          commit: upgrade-r
         parameters:
           - dataset_name: ["sc-mix"]
           # - dataset_name: ["sc-mix", "be1", "cb", "1.3m"]
