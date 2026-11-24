@@ -25,7 +25,8 @@ dependencies:
   - bioconductor-scrapper=1.4.0
   - bioconductor-anndatar=1.0.2
   - bioconductor-rhdf5=2.54.1          # HDF5 backend anndataR needs to read/write .h5ad
+  - bioconductor-data-packages=20260207=hdfd78af_1
 
   # almost-conductor
-  - r-bixverse
+  - r-bixverse=0.6.3
 
