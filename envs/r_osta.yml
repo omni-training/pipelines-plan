@@ -1,8 +1,8 @@
 name: r45-osca
 channels:
+  - https://prefix.dev/almost-conductor
   - conda-forge
   - bioconda
-  - https://prefix.dev/almost-conductor
   - nodefaults
 dependencies:
   # R
