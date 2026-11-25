@@ -1,4 +1,4 @@
-# Benchmarking scRNA pipelines (simplified for ECCB 2026 Workshop)
+# Benchmarking scRNA pipelines (simplified for training purposes)
 
 [![Open in OBEditor](https://img.shields.io/badge/open-obeditor-0078d4?style=flat)](https://omnibenchmark.github.io/obeditor?url=https://github.com/omni-training/pipelines-plan/blob/main/benchmark.yaml)
 
