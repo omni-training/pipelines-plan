@@ -1,0 +1,16 @@
+name: r_gather
+channels:
+  - https://prefix.dev/almost-conductor
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  # R
+  - r-base=4.5.3
+
+  # CRAN
+  - r-argparse=2.3.3
+  - r-jsonlite=2.0.0
+  - r-data.table
+  - r-dplyr
+

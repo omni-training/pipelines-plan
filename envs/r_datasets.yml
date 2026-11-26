@@ -1,4 +1,4 @@
-name: r45-singlecell
+name: r_datasets
 channels:
   - conda-forge
   - bioconda
