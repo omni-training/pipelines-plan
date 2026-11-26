@@ -153,8 +153,7 @@ stages:
         name: compute clustering metrics
         software_environment: metrics
         repository:
-          #url: https://github.com/omni-training/metrics
-          url: /Users/mark/projects/omb/omni-training/metrics
+          url: https://github.com/omni-training/metrics
           commit: add-gather
           entrypoint: compute
 
@@ -172,8 +171,7 @@ stages:
         name: "Organize metrics via R"
         software_environment: "r_gather"
         repository:
-          #url: https://github.com/omni-training/metrics
-          url: /Users/mark/projects/omb/omni-training/metrics
+          url: https://github.com/omni-training/metrics
           commit: add-gather
           entrypoint: gather
 
