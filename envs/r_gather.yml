@@ -1,4 +1,4 @@
-name: r45-osca
+name: r_gather
 channels:
   - https://prefix.dev/almost-conductor
   - conda-forge
