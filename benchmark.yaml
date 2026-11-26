@@ -19,6 +19,9 @@ software_environments:
   r_pipelines:
     name: conda env for R/BioC packages
     conda: envs/r_pipelines.yml
+  r_gather:
+    name: conda env for gathering metrics
+    conda: envs/r_gather.yml
   scanpy:
     name: conda env for Python + scanpy packages
     conda: envs/scanpy.yml
@@ -143,7 +146,7 @@ stages:
       - methods_timings
       - methods_clustering_info
     outputs:
-      - id: metrics_metrics
+      - id: metrics_json
         path: "{module.id}.metrics.json"
     modules:
       - id: metrics_py
@@ -151,5 +154,26 @@ stages:
         software_environment: metrics
         repository:
           url: https://github.com/omni-training/metrics
-          commit: 1560006
+          commit: add-gather
+          entrypoint: compute
+
+  - id: GATHER
+    gather:
+      group_by: DATA
+      from: [metrics_metrics]
+    outputs:
+      - id: metrics_tsv
+        path: "{module.id}_metrics.tsv"
+      - id: timings_tsv
+        path: "{module.id}_timings.tsv"
+    modules:
+      - id: gather_r
+        name: "Organize metrics via R"
+        software_environment: "r_gather"
+        repository:
+          #url: https://github.com/omni-training/metrics
+          url: /Users/mark/projects/omb/omni-training/metrics
+          commit: add-gather
+          entrypoint: gather
+
  
