@@ -153,14 +153,15 @@ stages:
         name: compute clustering metrics
         software_environment: metrics
         repository:
-          url: https://github.com/omni-training/metrics
+          #url: https://github.com/omni-training/metrics
+          url: /Users/mark/projects/omb/omni-training/metrics
           commit: add-gather
           entrypoint: compute
 
   - id: GATHER
     gather:
       group_by: DATA
-      from: [metrics_metrics]
+      from: [metrics_json]
     outputs:
       - id: metrics_tsv
         path: "{module.id}_metrics.tsv"

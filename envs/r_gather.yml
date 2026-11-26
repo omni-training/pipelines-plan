@@ -12,4 +12,5 @@ dependencies:
   - r-argparse=2.3.3
   - r-jsonlite=2.0.0
   - r-data.table
+  - r-dplyr
 
